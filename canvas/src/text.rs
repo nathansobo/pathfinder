@@ -13,6 +13,7 @@ use font_kit::canvas::RasterizationOptions;
 use font_kit::family_name::FamilyName;
 use font_kit::handle::Handle;
 use font_kit::hinting::HintingOptions;
+use font_kit::loader::Loader;
 use font_kit::loaders::default::Font;
 use font_kit::properties::Properties;
 use font_kit::source::{Source, SystemSource};
@@ -21,7 +22,7 @@ use pathfinder_geometry::transform2d::Transform2F;
 use pathfinder_geometry::util;
 use pathfinder_geometry::vector::{Vector2F, vec2f};
 use pathfinder_renderer::paint::PaintId;
-use pathfinder_text::{FontContext, FontRenderOptions, TextRenderMode};
+use pathfinder_text::{FontContext, FontRenderOptions, TextRenderMode, GlyphId};
 use skribo::{FontCollection, FontFamily, FontRef, Layout, TextStyle};
 use std::cell::RefCell;
 use std::rc::Rc;
@@ -69,6 +70,31 @@ impl CanvasRenderingContext2D {
                                   blend_mode,
                                   paint_id,
                               }));
+    }
+
+    pub fn fill_glyph(&mut self, font: &Font, glyph: GlyphId, position: Vector2F) {
+        let paint_id = self.canvas.scene.push_paint(&self.current_state.fill_paint);
+
+        let clip_path = self.current_state.clip_path;
+        let blend_mode = self.current_state.global_composite_operation.to_blend_mode();
+        let transform = self.current_state.transform * Transform2F::from_translation(position);
+
+        // TODO(nathansobo): Report errors.
+        drop(self.canvas_font_context
+                 .0
+                 .borrow_mut()
+                 .font_context
+                 .push_glyph(&mut self.canvas.scene,
+                             font,
+                             glyph,
+                             &FontRenderOptions {
+                                 transform,
+                                 render_mode: TextRenderMode::Fill,
+                                 hinting_options: HintingOptions::None,
+                                 clip_path,
+                                 blend_mode,
+                                 paint_id,
+                             }));
     }
 
     fn fill_or_stroke_text(&mut self,
