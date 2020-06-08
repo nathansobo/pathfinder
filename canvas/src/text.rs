@@ -77,7 +77,10 @@ impl CanvasRenderingContext2D {
 
         let clip_path = self.current_state.clip_path;
         let blend_mode = self.current_state.global_composite_operation.to_blend_mode();
-        let transform = self.current_state.transform * Transform2F::from_translation(position);
+
+        let scale = self.current_state.font_size / (font.metrics().units_per_em as f32);
+        let scale = vec2f(scale, -scale);
+        let transform = self.current_state.transform * Transform2F::from_scale(scale).translate(position);
 
         // TODO(nathansobo): Report errors.
         drop(self.canvas_font_context
