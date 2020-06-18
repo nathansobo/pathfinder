@@ -810,18 +810,20 @@ impl Device for GLDevice {
         query
     }
 
+    // Disabled temporarily because this seems to introduce intermittent slowness
     #[inline]
     fn begin_timer_query(&self, query: &Self::TimerQuery) {
-        unsafe {
-            gl::BeginQuery(gl::TIME_ELAPSED, query.gl_query); ck();
-        }
+        // unsafe {
+        //     gl::BeginQuery(gl::TIME_ELAPSED, query.gl_query); ck();
+        // }
     }
 
+    // Disabled temporarily because this seems to introduce intermittent slowness
     #[inline]
     fn end_timer_query(&self, _: &Self::TimerQuery) {
-        unsafe {
-            gl::EndQuery(gl::TIME_ELAPSED); ck();
-        }
+        // unsafe {
+        //     gl::EndQuery(gl::TIME_ELAPSED); ck();
+        // }
     }
 
     fn try_recv_timer_query(&self, query: &Self::TimerQuery) -> Option<Duration> {
