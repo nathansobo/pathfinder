@@ -12,6 +12,7 @@ use font_kit::error::GlyphLoadingError;
 use font_kit::hinting::HintingOptions;
 use font_kit::loader::Loader;
 use font_kit::loaders::default::Font as DefaultLoader;
+use font_kit::metrics::Metrics;
 use font_kit::outline::OutlineSink;
 use pathfinder_content::effects::BlendMode;
 use pathfinder_content::outline::{Contour, Outline};
@@ -27,7 +28,7 @@ use std::mem;
 
 #[derive(Clone)]
 pub struct FontContext<F> where F: Loader {
-    font_info: HashMap<String, FontInfo<F>>, 
+    font_info: HashMap<String, FontInfo<F>>,
 }
 
 #[derive(Clone)]
@@ -75,13 +76,26 @@ impl<F> FontContext<F> where F: Loader {
                       glyph_id: GlyphId,
                       render_options: &FontRenderOptions)
                       -> Result<(), GlyphLoadingError> {
-        let font_key = font.postscript_name();
-        let metrics = font.metrics();
+        let name = font.postscript_name();
+        self.push_glyph2(scene, font, glyph_id, render_options, &font.metrics(), name.as_ref().map(String::as_str))
+    }
+
+
+    pub fn push_glyph2(&mut self,
+                      scene: &mut Scene,
+                      font: &F,
+                      glyph_id: GlyphId,
+                      render_options: &FontRenderOptions,
+                      metrics: &Metrics,
+                      font_key: Option<&str>)
+                      -> Result<(), GlyphLoadingError> {
+        // let font_key = font.postscript_name();
+        // let metrics = font.metrics();
 
         // Insert the font into the cache if needed.
-        if let Some(ref font_key) = font_key {
-            if !self.font_info.contains_key(&*font_key) {
-                self.font_info.insert((*font_key).clone(), FontInfo::new((*font).clone()));
+        if let Some(font_key) = font_key {
+            if !self.font_info.contains_key(font_key) {
+                self.font_info.insert(font_key.into(), FontInfo::new((*font).clone()));
             }
         }
 
@@ -92,7 +106,7 @@ impl<F> FontContext<F> where F: Loader {
         let can_cache_outline = font_key.is_some() &&
             render_options.hinting_options == HintingOptions::None;
         if can_cache_outline {
-            if let Some(ref font_info) = self.font_info.get(&*font_key.as_ref().unwrap()) {
+            if let Some(ref font_info) = self.font_info.get(font_key.unwrap()) {
                 if let Some(ref outline) = font_info.outline_cache.get(&glyph_id) {
                     cached_outline = Some((*outline).clone());
                 }
@@ -116,8 +130,8 @@ impl<F> FontContext<F> where F: Loader {
                 font.outline(glyph_id.0, render_options.hinting_options, &mut outline_builder)?;
                 let mut outline = outline_builder.build();
                 if can_cache_outline {
-                    let font_key = font_key.as_ref().unwrap();
-                    let font_info = self.font_info.get_mut(&*font_key).unwrap();
+                    let font_key = font_key.unwrap();
+                    let font_info = self.font_info.get_mut(font_key).unwrap();
                     font_info.outline_cache.insert(glyph_id, outline.clone());
                     let scale = 1.0 / metrics.units_per_em as f32;
                     outline.transform(&(render_options.transform *

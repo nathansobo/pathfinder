@@ -15,6 +15,7 @@ use font_kit::handle::Handle;
 use font_kit::hinting::HintingOptions;
 use font_kit::loader::Loader;
 use font_kit::loaders::default::Font;
+use font_kit::metrics::Metrics;
 use font_kit::properties::Properties;
 use font_kit::source::{Source, SystemSource};
 use font_kit::sources::mem::MemSource;
@@ -72,13 +73,13 @@ impl CanvasRenderingContext2D {
                               }));
     }
 
-    pub fn fill_glyph(&mut self, font: &Font, glyph: GlyphId, position: Vector2F) {
+    pub fn fill_glyph(&mut self, font: &Font, glyph: GlyphId, position: Vector2F, metrics: &Metrics, postscript_name: &str) {
         let paint_id = self.canvas.scene.push_paint(&self.current_state.fill_paint);
 
         let clip_path = self.current_state.clip_path;
         let blend_mode = self.current_state.global_composite_operation.to_blend_mode();
 
-        let scale = self.current_state.font_size / (font.metrics().units_per_em as f32);
+        let scale = self.current_state.font_size / (metrics.units_per_em as f32);
         let scale = vec2f(scale, -scale);
         let transform = self.current_state.transform * Transform2F::from_scale(scale).translate(position);
 
@@ -87,7 +88,7 @@ impl CanvasRenderingContext2D {
                  .0
                  .borrow_mut()
                  .font_context
-                 .push_glyph(&mut self.canvas.scene,
+                 .push_glyph2(&mut self.canvas.scene,
                              font,
                              glyph,
                              &FontRenderOptions {
@@ -97,7 +98,9 @@ impl CanvasRenderingContext2D {
                                  clip_path,
                                  blend_mode,
                                  paint_id,
-                             }));
+                             },
+                             metrics,
+                             Some(postscript_name)));
     }
 
     fn fill_or_stroke_text(&mut self,
