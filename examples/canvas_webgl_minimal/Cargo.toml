@@ -1,19 +1,19 @@
 [package]
-name = "canvas_metal_minimal"
+name = "canvas-webgl-minimal"
 version = "0.1.0"
 authors = ["Patrick Walton <pcwalton@mimiga.net>"]
 edition = "2018"
 
+[lib]
+crate-type = ["cdylib", "rlib"]
+
+[features]
+default = []
+
 [dependencies]
-foreign-types = "0.3"
-gl = "0.14"
-metal = "0.18"
-objc = "0.2"
-sdl2 = "0.33"
-sdl2-sys = "0.33"
+wasm-bindgen = "0.2.63"
 
 [dependencies.pathfinder_canvas]
-features = ["pf-text"]
 path = "../../canvas"
 
 [dependencies.pathfinder_color]
@@ -31,11 +31,22 @@ path = "../../gl"
 [dependencies.pathfinder_gpu]
 path = "../../gpu"
 
-[dependencies.pathfinder_metal]
-path = "../../metal"
-
 [dependencies.pathfinder_renderer]
 path = "../../renderer"
 
 [dependencies.pathfinder_resources]
 path = "../../resources"
+
+[dependencies.pathfinder_webgl]
+path = "../../webgl"
+
+[dependencies.web-sys]
+version = "0.3"
+features = ["Window"]
+
+[dev-dependencies]
+wasm-bindgen-test = "0.3.13"
+
+[profile.release]
+# Tell `rustc` to optimize for small code size.
+opt-level = "s"

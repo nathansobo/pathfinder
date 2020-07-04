@@ -11,7 +11,6 @@
 use crate::gpu_data::{TILE_CTRL_MASK_0_SHIFT, TILE_CTRL_MASK_EVEN_ODD};
 use crate::gpu_data::{TILE_CTRL_MASK_WINDING, TileObjectPrimitive};
 use crate::paint::PaintId;
-use crate::scene::ClipPathId;
 use pathfinder_content::effects::BlendMode;
 use pathfinder_content::fill::FillRule;
 use pathfinder_geometry::rect::{RectF, RectI};
@@ -31,7 +30,6 @@ pub(crate) struct DrawTilingPathInfo {
     pub(crate) paint_id: PaintId,
     pub(crate) blend_mode: BlendMode,
     pub(crate) fill_rule: FillRule,
-    pub(crate) clip_path_id: Option<ClipPathId>,
 }
 
 impl TilingPathInfo {
