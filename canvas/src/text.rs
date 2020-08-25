@@ -21,7 +21,7 @@ use pathfinder_geometry::transform2d::Transform2F;
 use pathfinder_geometry::util;
 use pathfinder_geometry::vector::{Vector2F, vec2f};
 use pathfinder_renderer::paint::PaintId;
-use pathfinder_text::{FontContext, FontRenderOptions, TextRenderMode};
+use pathfinder_text::{FontContext, FontRenderOptions, GlyphId, TextRenderMode};
 use skribo::{FontCollection, FontFamily, FontRef, Layout as SkriboLayout, TextStyle};
 use std::borrow::Cow;
 use std::cell::{Cell, RefCell};
@@ -95,6 +95,31 @@ impl CanvasRenderingContext2D {
                               }));
     }
 
+
+    pub fn fill_glyph(&mut self, font: &Font, font_key: &str, glyph_id: GlyphId, offset: Vector2F) {
+        let paint_id = self.canvas.scene.push_paint(&self.current_state.fill_paint);
+
+        // TODO(nathansobo): Report errors.
+        drop(self.canvas_font_context
+                 .0
+                 .borrow_mut()
+                 .font_context
+                 .push_glyph(&mut self.canvas.scene,
+                             font,
+                             Some(font_key),
+                             glyph_id,
+                             offset,
+                             self.current_state.font_size,
+                             &FontRenderOptions {
+                                 transform: self.current_state.transform,
+                                 render_mode: TextRenderMode::Fill,
+                                 hinting_options: HintingOptions::None,
+                                 clip_path: self.current_state.clip_path,
+                                 blend_mode: self.current_state.global_composite_operation.to_blend_mode(),
+                                 paint_id,
+                             }));
+    }
+
     // Text styles
 
     #[inline]
@@ -105,7 +130,7 @@ impl CanvasRenderingContext2D {
     #[inline]
     pub fn set_font<FC>(&mut self, font_collection: FC) where FC: IntoFontCollection {
         let font_collection = font_collection.into_font_collection(&self.canvas_font_context);
-        self.current_state.font_collection = font_collection; 
+        self.current_state.font_collection = font_collection;
     }
 
     #[inline]

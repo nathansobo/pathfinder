@@ -29,7 +29,7 @@ use std::sync::Arc;
 
 #[derive(Clone)]
 pub struct FontContext<F> where F: Loader {
-    font_info: HashMap<String, FontInfo<F>>, 
+    font_info: HashMap<String, FontInfo<F>>,
 }
 
 #[derive(Clone)]
@@ -77,7 +77,7 @@ impl<F> FontContext<F> where F: Loader {
         FontContext { font_info: HashMap::new() }
     }
 
-    fn push_glyph(&mut self,
+    pub fn push_glyph(&mut self,
                   scene: &mut Scene,
                   font: &F,
                   font_key: Option<&str>,
