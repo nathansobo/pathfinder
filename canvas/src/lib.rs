@@ -578,7 +578,7 @@ impl CanvasRenderingContext2D {
     // SVG drawing
 
     pub fn draw_svg(&mut self, tree: &usvg::Tree, origin: Vector2F) {
-        let transform = Transform2F::from_translation(origin) * self.current_state.transform;
+        let transform = self.current_state.transform * Transform2F::from_translation(origin);
         let svg_scene = SVGScene::from_tree_and_scene_with_transform(tree, Scene::new(), transform);
         self.canvas.scene.append_scene(svg_scene.scene);
     }
