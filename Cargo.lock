@@ -2042,8 +2042,10 @@ dependencies = [
  "pathfinder_content",
  "pathfinder_geometry",
  "pathfinder_renderer",
+ "pathfinder_svg",
  "pathfinder_text",
  "skribo",
+ "usvg",
 ]
 
 [[package]]

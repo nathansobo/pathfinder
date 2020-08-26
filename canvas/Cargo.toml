@@ -14,6 +14,7 @@ crate-type = ["rlib", "staticlib"]
 
 [dependencies]
 font-kit = { version = "0.6", optional = true }
+usvg = "0.9"
 
 [dependencies.pathfinder_color]
 path = "../color"
@@ -29,6 +30,10 @@ version = "0.5"
 
 [dependencies.pathfinder_renderer]
 path = "../renderer"
+version = "0.5"
+
+[dependencies.pathfinder_svg]
+path = "../svg"
 version = "0.5"
 
 [dependencies.pathfinder_text]

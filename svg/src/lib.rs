@@ -68,6 +68,10 @@ impl SVGScene {
 
     // TODO(pcwalton): Allow a global transform to be set.
     pub fn from_tree_and_scene(tree: &Tree, scene: Scene) -> SVGScene {
+        SVGScene::from_tree_and_scene_with_transform(tree, scene, Transform2F::default())
+    }
+
+    pub fn from_tree_and_scene_with_transform(tree: &Tree, scene: Scene, transform: Transform2F) -> SVGScene {
         // TODO(pcwalton): Maybe have a `SVGBuilder` type to hold the clip path IDs and other
         // transient data separate from `SVGScene`?
         let mut built_svg = SVGScene {
@@ -82,7 +86,7 @@ impl SVGScene {
             NodeKind::Svg(ref svg) => {
                 built_svg.scene.set_view_box(usvg_rect_to_euclid_rect(&svg.view_box.rect));
                 for kid in root.children() {
-                    built_svg.process_node(&kid, &State::new(), &mut None);
+                    built_svg.process_node(&kid, &State::new(transform), &mut None);
                 }
             }
             _ => unreachable!(),
@@ -537,10 +541,10 @@ struct State {
 }
 
 impl State {
-    fn new() -> State {
+    fn new(transform: Transform2F) -> State {
         State {
             path_destination: PathDestination::Draw,
-            transform: Transform2F::default(),
+            transform,
             clip_path: None,
         }
     }

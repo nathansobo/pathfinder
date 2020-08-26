@@ -30,6 +30,7 @@ use pathfinder_content::stroke::{OutlineStrokeToFill, StrokeStyle};
 use pathfinder_geometry::line_segment::LineSegment2F;
 use pathfinder_renderer::paint::{Paint, PaintCompositeOp};
 use pathfinder_renderer::scene::{ClipPath, ClipPathId, DrawPath, RenderTarget, Scene};
+use pathfinder_svg::SVGScene;
 use std::borrow::Cow;
 use std::default::Default;
 use std::f32::consts::PI;
@@ -572,6 +573,14 @@ impl CanvasRenderingContext2D {
         let paint_id = self.canvas.scene.push_paint(&Paint::from_pattern(pattern));
         let draw_path = DrawPath::new(Outline::from_rect(RectF::new(origin, size)), paint_id);
         self.canvas.scene.push_draw_path(draw_path);
+    }
+
+    // SVG drawing
+
+    pub fn draw_svg(&mut self, tree: &usvg::Tree, origin: Vector2F) {
+        let transform = Transform2F::from_translation(origin) * self.current_state.transform;
+        let svg_scene = SVGScene::from_tree_and_scene_with_transform(tree, Scene::new(), transform);
+        self.canvas.scene.append_scene(svg_scene.scene);
     }
 
     // Image smoothing
