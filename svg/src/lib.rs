@@ -37,13 +37,6 @@ use usvg::{Transform as UsvgTransform, Tree, Visibility};
 
 const HAIRLINE_STROKE_WIDTH: f32 = 0.0333;
 
-pub struct SVGScene {
-    pub scene: Scene,
-    pub result_flags: BuildResultFlags,
-    pub clip_paths: HashMap<String, Outline>,
-    gradients: HashMap<String, GradientInfo>,
-}
-
 bitflags! {
     // NB: If you change this, make sure to update the `Display`
     // implementation as well.
@@ -59,6 +52,11 @@ bitflags! {
     }
 }
 
+pub struct SVGScene {
+    pub scene: Scene,
+    pub result_flags: BuildResultFlags,
+}
+
 impl SVGScene {
     // TODO(pcwalton): Allow a global transform to be set.
     #[inline]
@@ -67,32 +65,61 @@ impl SVGScene {
     }
 
     // TODO(pcwalton): Allow a global transform to be set.
-    pub fn from_tree_and_scene(tree: &Tree, scene: Scene) -> SVGScene {
-        SVGScene::from_tree_and_scene_with_transform(tree, scene, Transform2F::default())
-    }
+    pub fn from_tree_and_scene(tree: &Tree, mut scene: Scene) -> SVGScene {
+        match *tree.root().borrow() {
+            NodeKind::Svg(ref svg) => {
+                scene.set_view_box(usvg_rect_to_euclid_rect(&svg.view_box.rect));
+            }
+            _ => unreachable!(),
+        };
 
-    pub fn from_tree_and_scene_with_transform(tree: &Tree, scene: Scene, transform: Transform2F) -> SVGScene {
-        // TODO(pcwalton): Maybe have a `SVGBuilder` type to hold the clip path IDs and other
-        // transient data separate from `SVGScene`?
-        let mut built_svg = SVGScene {
+        let mut builder = SVGBuilder::new(&mut scene);
+        builder.draw_tree(tree);
+        let result_flags = builder.result_flags;
+        Self {
+            scene,
+            result_flags,
+        }
+    }
+}
+
+pub struct SVGBuilder<'a> {
+    pub scene: &'a mut Scene,
+    pub result_flags: BuildResultFlags,
+    pub clip_paths: HashMap<String, Outline>,
+    gradients: HashMap<String, GradientInfo>,
+    state: State,
+}
+
+impl<'a> SVGBuilder<'a> {
+    pub fn new(scene: &'a mut Scene) -> Self {
+        Self {
             scene,
             result_flags: BuildResultFlags::empty(),
             clip_paths: HashMap::new(),
             gradients: HashMap::new(),
-        };
-
-        let root = &tree.root();
-        match *root.borrow() {
-            NodeKind::Svg(ref svg) => {
-                built_svg.scene.set_view_box(usvg_rect_to_euclid_rect(&svg.view_box.rect));
-                for kid in root.children() {
-                    built_svg.process_node(&kid, &State::new(transform), &mut None);
-                }
-            }
-            _ => unreachable!(),
+            state: State::new()
         }
+    }
 
-        built_svg
+    pub fn with_transform(mut self, transform: Transform2F) -> Self {
+        self.state.transform = transform;
+        self
+    }
+
+    pub fn with_clip_path(mut self, clip_path_id: Option<ClipPathId>) -> Self {
+        self.state.clip_path = clip_path_id;
+        self
+    }
+
+    // TODO(pcwalton): Allow a global transform to be set.
+    #[inline]
+    pub fn draw_tree(&mut self, tree: &Tree) {
+        let root = tree.root();
+        let state = self.state.clone();
+        for kid in root.children() {
+            self.process_node(&kid, &state, &mut None);
+        }
     }
 
     fn process_node(&mut self,
@@ -541,10 +568,10 @@ struct State {
 }
 
 impl State {
-    fn new(transform: Transform2F) -> State {
+    fn new() -> State {
         State {
             path_destination: PathDestination::Draw,
-            transform,
+            transform: Default::default(),
             clip_path: None,
         }
     }
