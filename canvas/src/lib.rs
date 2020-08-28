@@ -577,9 +577,21 @@ impl CanvasRenderingContext2D {
 
     // SVG drawing
 
-    pub fn draw_svg(&mut self, tree: &usvg::Tree, origin: Vector2F) {
+    pub fn draw_svg<L>(&mut self, tree: &usvg::Tree, dest_location: L)
+    where
+        L: CanvasImageDestLocation,
+    {
+        let src_rect = pathfinder_svg::usvg_rect_to_euclid_rect(&tree.svg_node().view_box.rect);
+
+        let offset = dest_location.origin() - src_rect.origin();
+        let mut transform = self.current_state.transform * Transform2F::from_translation(offset);
+
+        if let Some(dest_size) = dest_location.size() {
+            transform *= Transform2F::from_scale(dest_size / src_rect.size());
+        }
+
         let mut builder = SVGBuilder::new(&mut self.canvas.scene)
-            .with_transform(self.current_state.transform * Transform2F::from_translation(origin))
+            .with_transform(transform)
             .with_clip_path(self.current_state.clip_path);
         builder.draw_tree(tree)
     }

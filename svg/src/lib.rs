@@ -397,7 +397,7 @@ impl PaintExt for Paint {
     }
 }
 
-fn usvg_rect_to_euclid_rect(rect: &UsvgRect) -> RectF {
+pub fn usvg_rect_to_euclid_rect(rect: &UsvgRect) -> RectF {
     RectF::new(vec2f(rect.x() as f32, rect.y() as f32),
                vec2f(rect.width() as f32, rect.height() as f32))
 }
