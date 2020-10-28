@@ -49,7 +49,7 @@ path = "../svg"
 [target.'cfg(target_os = "macos")'.dependencies]
 core-foundation = "0.6"
 io-surface = "0.12"
-metal = "0.18"
+metal = "0.20"
 
 [target.'cfg(target_os = "macos")'.dependencies.pathfinder_metal]
 path = "../metal"

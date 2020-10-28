@@ -707,7 +707,7 @@ impl Device for MetalDevice {
                 *mutex = (*mutex).max(event_value);
                 buffer_upload_event_data.cond.notify_all();
             });
-            self.buffer_upload_shared_event.notify_listener_at_value(&self.shared_event_listener,   
+            self.buffer_upload_shared_event.notify_listener_at_value(&self.shared_event_listener,
                                                                      staging_buffer.event_value,
                                                                      listener_block.copy());
         }
@@ -2214,8 +2214,8 @@ impl MetalTextureDataReceiver {
                 let stride = size.x() as usize * channels;
                 let mut pixels = vec![0; stride * size.y() as usize];
                 self.0.texture.get_bytes(pixels.as_mut_ptr() as *mut _,
-                                         metal_region,
                                          0,
+                                         metal_region,
                                          stride as u64);
                 TextureData::U8(pixels)
             }
@@ -2224,8 +2224,8 @@ impl MetalTextureDataReceiver {
                 let stride = size.x() as usize * channels;
                 let mut pixels = vec![f16::default(); stride * size.y() as usize];
                 self.0.texture.get_bytes(pixels.as_mut_ptr() as *mut _,
-                                         metal_region,
                                          0,
+                                         metal_region,
                                          stride as u64 * 2);
                 TextureData::F16(pixels)
             }
@@ -2234,8 +2234,8 @@ impl MetalTextureDataReceiver {
                 let stride = size.x() as usize * channels;
                 let mut pixels = vec![0.0; stride * size.y() as usize];
                 self.0.texture.get_bytes(pixels.as_mut_ptr() as *mut _,
-                                         metal_region,
                                          0,
+                                         metal_region,
                                          stride as u64 * 4);
                 TextureData::F32(pixels)
             }
